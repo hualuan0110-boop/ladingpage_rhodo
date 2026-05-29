@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=yes">
+    <title>RHODO | Trạm xử lý sự cố ao tôm | Kỹ sư online 24/7</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0f12;
+            color: #eef4ff;
+            line-height: 1.5;
+        }
+        .container { max-width: 600px; margin: 0 auto; background: #0f1724; padding-bottom: 80px; }
+        .progress-bar {
+            position: fixed; top: 0; left: 0; height: 4px;
+            background: linear-gradient(90deg, #10b981, #06b6d4);
+            width: 0%; z-index: 1001;
+        }
+        .scroll-urgency-bar {
+            position: fixed; bottom: 0; left: 0; right: 0;
+            background: linear-gradient(90deg, #ef4444, #dc2626);
+            color: white; text-align: center; padding: 12px;
+            font-size: 0.8rem; font-weight: 800;
+            transform: translateY(100%); transition: transform 0.3s;
+            z-index: 1000;
+        }
+        .scroll-urgency-bar.show { transform: translateY(0); }
+        .scroll-urgency-bar a { color: white; text-decoration: underline; font-weight: 900; }
+        
+        h1 { font-size: 1.7rem; font-weight: 800; line-height: 1.2; }
+        h2 { font-size: 1.3rem; border-left: 4px solid #10b981; padding-left: 0.8rem; margin-bottom: 1rem; font-weight: 800; }
+        .section { padding: 2rem 1.25rem; border-bottom: 1px solid #1e2a3a; }
+        .card { background: #111a27; border-radius: 20px; padding: 1.25rem; margin-bottom: 1rem; border: 1px solid #1f3a4b; }
+        .pill {
+            background: #1e2a3a; padding: 0.25rem 0.75rem; border-radius: 40px;
+            font-size: 0.7rem; font-weight: 600; display: inline-block;
+            margin-bottom: 0.8rem; color: #10b981;
+        }
+        .highlight { background: #10b98120; padding: 0.2rem 0.4rem; border-radius: 6px; color: #34d399; font-weight: 600; }
+        .danger-highlight { background: #ef444420; color: #ef4444; font-weight: 800; padding: 0.2rem 0.4rem; border-radius: 6px; }
+        
+        .cta-button {
+            background: linear-gradient(90deg, #10b981, #06b6d4);
+            color: white; border: none; width: 100%;
+            padding: 1rem; border-radius: 60px; font-weight: 800;
+            font-size: 1rem; cursor: pointer; text-align: center;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+        }
+        .cta-button:active { transform: scale(0.98); }
+        .cta-zalo {
+            background: linear-gradient(90deg, #0068ff, #0099ff);
+            box-shadow: 0 4px 15px rgba(0, 104, 255, 0.3);
+        }
+        
+        .img-card {
+            background: #0a0f12; border-radius: 16px; padding: 0.75rem;
+            text-align: center; margin-bottom: 1rem;
+        }
+        .img-card img { width: 100%; border-radius: 12px; display: block; }
+        .img-caption { font-size: 0.65rem; color: #94a3b8; margin-top: 0.4rem; }
+        
+        .two-columns { display: flex; gap: 0.8rem; margin-bottom: 1rem; }
+        .two-columns .img-card { flex: 1; margin-bottom: 0; }
+        
+        .certificate-row { display: flex; gap: 0.8rem; margin: 1rem 0; justify-content: center; }
+        .cert-card { background: #0a0f12; border-radius: 12px; padding: 0.5rem; text-align: center; flex: 1; border: 1px solid #1f3a4b; }
+        .cert-card img { width: 100%; max-height: 100px; object-fit: contain; border-radius: 8px; }
+        
+        .avatar-row { display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: center; margin: 1rem 0; }
+        .avatar-item { width: 45px; height: 45px; border-radius: 50%; overflow: hidden; border: 2px solid #10b98140; }
+        .avatar-item img { width: 100%; height: 100%; object-fit: cover; }
+        
+        .level-table { display: flex; flex-direction: column; gap: 0.8rem; margin: 1rem 0; }
+        .level-card {
+            background: #0a121f; border-radius: 20px; padding: 1rem;
+            border: 1px solid #1f3a4b; cursor: pointer;
+            transition: all 0.2s;
+            display: flex; align-items: center; gap: 1rem;
+        }
+        .level-card:hover { background: #1e293b; transform: translateX(5px); border-color: #10b981; }
+        .level-badge { font-size: 1.4rem; font-weight: 900; min-width: 60px; text-align: center; }
+        .level-badge.level-1 { color: #f59e0b; }
+        .level-badge.level-2 { color: #f97316; }
+        .level-badge.level-3 { color: #ef4444; text-shadow: 0 0 5px rgba(239,68,68,0.5); }
+        .level-info { flex: 1; }
+        .level-name { font-weight: 800; font-size: 1rem; }
+        .level-desc { font-size: 0.75rem; color: #94a3b8; margin-top: 0.2rem; }
+        .level-arrow { color: #10b981; font-size: 1.2rem; }
+        
+        .danger-window-critical {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            border: 2px solid #ff7777;
+            color: white;
+            padding: 1rem;
+            border-radius: 16px;
+            margin: 1rem 0;
+            font-weight: 800;
+            text-align: center;
+            animation: criticalPulse 1s ease-in-out infinite;
+        }
+        @keyframes criticalPulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(239,68,68,0.4); }
+            50% { box-shadow: 0 0 0 8px rgba(239,68,68,0); }
+        }
+        
+        .timeline { display: flex; flex-direction: column; gap: 0.5rem; margin: 1rem 0; }
+        .timeline-row { display: flex; align-items: center; gap: 1rem; background: #0a121f; padding: 0.8rem; border-radius: 12px; }
+        .timeline-day { width: 70px; font-weight: 800; color: #10b981; font-size: 0.9rem; }
+        .timeline-status { flex: 1; font-size: 0.85rem; }
+        
+        .chat-wall { display: flex; flex-direction: column; gap: 0.8rem; }
+        .chat-message { background: #0a121f; border-radius: 12px; padding: 1rem; border-left: 3px solid #10b981; display: flex; gap: 0.8rem; }
+        .chat-avatar { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; }
+        .chat-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .chat-content { flex: 1; }
+        .chat-name { font-weight: 700; font-size: 0.8rem; color: #10b981; margin-bottom: 0.3rem; }
+        .chat-text { font-size: 0.85rem; line-height: 1.4; color: #e2e8f0; }
+        
+        .checklist { background: #0a121f; border-radius: 16px; padding: 1.25rem; margin: 1rem 0; transition: all 0.3s; }
+        .checklist.alert-danger-zone { background: rgba(239, 68, 68, 0.15); border: 2px solid #ef4444; animation: alertShake 0.5s ease; }
+        @keyframes alertShake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+        .checklist-item {
+            display: flex; align-items: center; gap: 0.8rem;
+            margin-bottom: 0.8rem; padding: 0.6rem;
+            border-radius: 12px; background: #0f1724;
+        }
+        .checklist-item input { width: 22px; height: 22px; cursor: pointer; accent-color: #ef4444; }
+        .checklist-item label { cursor: pointer; font-size: 0.9rem; width: 100%; }
+        
+        .live-badge {
+            display: inline-flex; align-items: center; gap: 0.5rem;
+            background: #ef4444; color: white; padding: 0.4rem 0.8rem;
+            border-radius: 40px; font-size: 0.7rem; font-weight: 700;
+            margin-bottom: 1rem;
+        }
+        .pulse { width: 8px; height: 8px; background: white; border-radius: 50%; animation: pulse 1.2s infinite; }
+        @keyframes pulse { 0% { opacity: 0.2; transform: scale(0.8); } 50% { opacity: 1; transform: scale(1.2); } 100% { opacity: 0.2; transform: scale(0.8); } }
+        
+        .scarcity-badge { background: #1e293b; border-radius: 60px; padding: 0.6rem 1rem; text-align: center; font-size: 0.8rem; margin: 1rem 0; border: 1px solid #f59e0b40; }
+        .scarcity-number { color: #f59e0b; font-weight: 900; font-size: 1.2rem; }
+        .local-stats { background: #1e293b; border-radius: 12px; padding: 0.75rem 1rem; text-align: center; font-size: 0.8rem; margin: 1rem 0; }
+        
+        .input-field { width: 100%; padding: 0.9rem 1.2rem; background: #1e293b; border: 1px solid #334155; border-radius: 30px; color: white; margin-bottom: 0.8rem; font-size: 1rem; }
+        .fake-upload-box { border: 2px dashed #475569; padding: 1rem; text-align: center; border-radius: 12px; margin-bottom: 0.8rem; cursor: pointer; background: #0f172a; color: #94a3b8; font-size: 0.85rem; }
+        .fake-upload-box i { font-size: 1.5rem; margin-bottom: 0.3rem; display: block; color: #10b981; }
+        
+        .faq-item { background: #111a27; border-radius: 12px; padding: 1rem; margin-bottom: 0.6rem; cursor: pointer; }
+        .faq-question { font-weight: 700; display: flex; justify-content: space-between; align-items: center; font-size: 0.95rem; }
+        .faq-answer { display: none; padding-top: 0.8rem; font-size: 0.85rem; color: #9ca3af; line-height: 1.4; }
+        
+        .modal {
+            display: none; position: fixed; top: 0; left: 0;
+            width: 100%; height: 100%; background: rgba(0,0,0,0.96);
+            align-items: center; justify-content: center; z-index: 2000; padding: 1rem;
+        }
+        .modal-card { background: #0f1724; width: 100%; max-width: 360px; border-radius: 24px; padding: 1.8rem; border: 1px solid #10b981; position: relative; }
+        .modal-card h3 { font-size: 1.2rem; margin-bottom: 0.8rem; }
+        
+        .floating-zalo {
+            position: fixed; bottom: 20px; right: 20px;
+            background: #0068ff; width: 60px; height: 60px; border-radius: 50%;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            font-weight: 900; font-size: 0.7rem; color: white; cursor: pointer;
+            z-index: 1000; border: 2px solid white; box-shadow: 0 4px 20px rgba(0,104,255,0.5);
+        }
+        .floating-zalo span { font-size: 1rem; font-weight: 900; }
+        
+        /* NOTIFICATION POPUP - tiếp nhận tình trạng ao */
+        .notify-popup {
+            position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+            background: #10b981; color: white; padding: 12px 20px;
+            border-radius: 60px; font-size: 0.85rem; font-weight: 700;
+            z-index: 2001; display: none; align-items: center; gap: 10px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            white-space: nowrap;
+            animation: slideDown 0.3s ease;
+        }
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateX(-50%) translateY(-50px); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+        
+        .fomo-toast {
+            position: fixed; bottom: 95px; left: 15px; background: #111a27;
+            border-left: 4px solid #10b981; padding: 0.6rem 0.9rem;
+            border-radius: 8px; font-size: 0.75rem; color: #e2e8f0;
+            z-index: 999; display: none; max-width: 280px;
+        }
+        
+        .delay-popup {
+            position: fixed; bottom: 150px; right: 20px;
+            background: #1e293b; border-radius: 12px; padding: 0.8rem 1rem;
+            font-size: 0.7rem; color: #e2e8f0; z-index: 999;
+            display: none; align-items: center; gap: 0.8rem;
+            border: 1px solid #f59e0b; max-width: 260px;
+        }
+        .delay-popup .close-delay { background: none; border: none; color: #94a3b8; cursor: pointer; font-size: 1rem; }
+        
+        footer { text-align: center; padding: 2rem 1.25rem; font-size: 0.75rem; color: #5b6e8c; border-top: 1px solid #1e2a3a; }
+        @media (max-width: 600px) { .section { padding: 1.5rem 1rem; } h1 { font-size: 1.45rem; } .avatar-item { width: 38px; height: 38px; } .notify-popup { font-size: 0.7rem; padding: 8px 16px; white-space: normal; text-align: center; width: 90%; } }
+    </style>
+</head>
+<body>
+<div class="progress-bar" id="scrollBar"></div>
+<div class="notify-popup" id="notifyPopup">
+    <i class="fas fa-check-circle"></i> <span id="notifyText">Đã tiếp nhận tình trạng ao từ 0949***584 — đang xử lý</span>
+</div>
+<div class="scroll-urgency-bar" id="scrollUrgencyBar">
+    🚨 NHIỀU AO CHỈ MẤT 2-4 NGÀY TỪ BỌT → HAO. ĐỪNG ĐỂ TỚI LÚC ĐÓ. <a href="#" id="urgencyCta">GỬI ẢNH ZALO NGAY →</a>
+</div>
+<div class="container">
+
+    <!-- HERO -->
+    <div class="hero" style="background: linear-gradient(145deg, #07121f, #0a121f); padding: 2rem 1.25rem; text-align: center;">
+        <div class="live-badge"><div class="pulse"></div> 🟢 KỸ SƯ TRỰC AO — ĐANG ONLINE (CA ĐÊM)</div>
+        <div class="scarcity-badge">🎯 <span class="scarcity-number" id="scarcityCount">12</span> suất xem ao MIỄN PHÍ còn lại trong ca hôm nay</div>
+        <h1 style="background: linear-gradient(135deg, #fff, #10b981); -webkit-background-clip: text; background-clip: text; color: transparent;">Sau cơn mưa, NO₂ thường tăng âm thầm dưới đáy.<br><span class="danger-highlight">Đến khi quạt gom bọt nâu, tôm nổi đầu lúc 2-3h sáng... thì nhiều ao đã bắt đầu hao.</span></h1>
+        <div class="danger-window-critical" id="heroAlert">
+            🚨 CẢNH BÁO: KHÍ ĐỘC KHÔNG BÁO TRƯỚC — NÓ ĂN MÒN MANG TÔM TỪNG NGÀY
+        </div>
+        <div class="local-stats">📍 <strong>Đang hỗ trợ khẩn cấp:</strong><br><span id="liveStatsText">Cà Mau, Bạc Liêu, Sóc Trăng, Năm Căn, Đầm Dơi, Vĩnh Châu</span></div>
+        <button class="cta-button cta-zalo" id="heroCta">📸 CHỤP ẢNH AO NƯỚC → GỬI ZALO CHẨN ĐOÁN NGAY</button>
+    </div>
+
+    <!-- GIẤY CHỨNG NHẬN -->
+    <div class="section">
+        <h2>🏆 GIẤY CHỨNG NHẬN & SẢN PHẨM ĐÃ ĐƯỢC KIỂM ĐỊNH</h2>
+        <div class="certificate-row">
+            <div class="cert-card"><img src="https://i.postimg.cc/yNyGH4KB/giay-chung-nhan-mat-do-vi-sinh.png" alt="Chứng nhận"><p>Mật độ vi sinh</p></div>
+            <div class="cert-card"><img src="https://i.postimg.cc/xd3Z2DQH/giay-chung-nhan-san-pham.png" alt="Chứng nhận"><p>Chứng nhận sản phẩm</p></div>
+        </div>
+    </div>
+
+    <!-- ẢNH BỌT DƠ -->
+    <div class="section">
+        <h2>🔴 DẤU HIỆU NHẬN BIẾT AO ĐANG BÁO ĐỘNG</h2>
+        <div class="two-columns">
+            <div class="img-card"><img src="https://i.postimg.cc/fbJ86nJc/ao-noi-bot-do.jpg" alt="Bọt dơ"><div class="img-caption">📸 Bọt nâu đặc quánh</div></div>
+            <div class="img-card"><img src="https://i.postimg.cc/jjLMG0LP/bot-do.jpg" alt="Bọt"><div class="img-caption">📸 Bọt lâu tan, màu nâu đen</div></div>
+        </div>
+        <div class="img-card"><img src="https://i.postimg.cc/4x88LNN4/xac-tao.jpg" alt="Xác tảo"><div class="img-caption">📸 Xác tảo tàn — nguồn dinh dưỡng cho khí độc</div></div>
+    </div>
+
+    <!-- AVATA KHÁCH HÀNG -->
+    <div class="section">
+        <h2>👥 CỘNG ĐỒNG NUÔI TÔM ĐÃ TIN DÙNG</h2>
+        <div class="avatar-row" id="avatarRow"></div>
+        <p style="font-size:0.7rem; text-align:center; color:#94a3b8;">Hơn 500+ ao nuôi trên khắp miền Tây đã sử dụng RHODO</p>
+    </div>
+
+    <!-- SELF-DIAGNOSIS -->
+    <div class="section">
+        <h2>🔍 TRẮC NGHIỆM NHANH: AO ĐANG Ở MỨC NÀO?</h2>
+        <div class="checklist" id="selfDiagnosis">
+            <div class="checklist-item"><input type="checkbox" id="sign1"><label>☑ Bọt nước lâu tan, màu nâu đen như ảnh trên</label></div>
+            <div class="checklist-item"><input type="checkbox" id="sign2"><label>☑ Sờ bờ bạt thấy nhớt dính tay</label></div>
+            <div class="checklist-item"><input type="checkbox" id="sign3"><label>☑ Tôm ăn chậm, sụt cữ từ 15-30%</label></div>
+            <div class="checklist-item"><input type="checkbox" id="sign4"><label>☑ Nước ao đục, sẫm màu, có mùi tanh nặng</label></div>
+            <div class="checklist-item"><input type="checkbox" id="sign5"><label>☑ Tôm nổi đầu nhẹ lúc 2-3h sáng</label></div>
+        </div>
+        <div id="diagnosisResult" class="danger-window-critical" style="display: none;">
+            🚨🚨🚨 <strong>BÁO ĐỘNG ĐỎ CẤP CAO</strong> 🚨🚨🚨<br>
+            <span id="diagnosisCount" style="font-size: 2rem; font-weight: 900;">0</span>/5 DẤU HIỆU<br>
+            AO ĐANG QUÁ TẢI HỮU CƠ NẶNG. NẾU KHÔNG XỬ LÝ TRONG 24H, NGUY CƠ HAO TÔM RẤT CAO.
+        </div>
+    </div>
+
+    <!-- SELF-SEGMENTATION -->
+    <div class="section">
+        <h2>📊 CHỌN ĐÚNG MỨC AO CỦA ANH/CHỊ</h2>
+        <p style="font-size:0.8rem; color:#94a3b8; margin-bottom: 0.5rem;">👉 Nhấp vào mức ao bên dưới → nhắn Zalo kỹ sư ngay</p>
+        <div class="level-table">
+            <div class="level-card" data-level="1" data-dosage="1 lít / 5.000m³" data-message="Mức 1: bọt nhẹ, nước hơi đục">
+                <div class="level-badge level-1">🔵</div>
+                <div class="level-info"><div class="level-name">Mức 1 — Nhẹ</div><div class="level-desc">Bọt nhẹ, nước hơi đục, tôm vẫn ăn bình thường</div></div>
+                <div class="level-arrow">👉</div>
+            </div>
+            <div class="level-card" data-level="2" data-dosage="1 lít / 3.000m³" data-message="Mức 2: bọt nâu, nhớt bạt, tôm ăn chậm">
+                <div class="level-badge level-2">🟠</div>
+                <div class="level-info"><div class="level-name">Mức 2 — Trung bình</div><div class="level-desc">Bọt nâu, nhớt bạt, tôm ăn chậm 15-20%</div></div>
+                <div class="level-arrow">👉</div>
+            </div>
+            <div class="level-card" data-level="3" data-dosage="2 lít / 2.000m³, đánh 2-3 ngày" data-message="Mức 3: tôm nổi đầu, NO₂ đỏ rực, ăn giảm >30%">
+                <div class="level-badge level-3">🔴</div>
+                <div class="level-info"><div class="level-name">Mức 3 — Nặng (CẦN XỬ LÝ NGAY)</div><div class="level-desc">Tôm nổi đầu đêm, NO₂ test đỏ rực, ăn giảm >30%</div></div>
+                <div class="level-arrow">👉</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ẢNH TÔM CHẾT -->
+    <div class="section">
+        <div class="card" style="border-left: 4px solid #ef4444; background: #0a121f;">
+            <p style="font-size:0.9rem;"><strong>⚠️ NHIỀU AO XỬ LÝ TRỄ THƯỜNG TRẢI QUA:</strong><br>
+            Bọt nâu → giảm ăn → nổi đầu nhẹ → hao lai rai → chết rải rác → chết hàng loạt</p>
+        </div>
+        <div class="two-columns">
+            <div class="img-card"><img src="https://i.postimg.cc/qvmmbMMK/tom-chet-1.jpg" alt="Tôm chết"><div class="img-caption">📸 Ao xử lý trễ — bắt đầu hao</div></div>
+            <div class="img-card"><img src="https://i.postimg.cc/xdc6WDcz/tom-chet-dam-doi.jpg" alt="Tôm chết"><div class="img-caption">📸 Hậu quả khi khí độc bùng phát</div></div>
+        </div>
+    </div>
+
+    <!-- CƠ CHẾ KHOA HỌC -->
+    <div class="section">
+        <h2>💡 VÌ SAO SAU MƯA AO DỄ BÙNG KHÍ ĐỘC?</h2>
+        <div class="card" style="background:#0a121f;">
+            <p>🌧️ <strong>Sau mưa:</strong> nước phân tầng, tảo tàn, hữu cơ đáy phân hủy mạnh, oxy đáy giảm.<br>
+            Lúc này <strong class="danger-highlight">NO₂, H₂S</strong> thường tăng âm thầm bên dưới — trước khi biểu hiện ra mặt nước.<br>
+            Đến khi thấy bọt nâu, tôm nổi đầu, nhiều ao đã mất <strong class="danger-highlight">3-5 ngày "vàng"</strong> để xử lý.</p>
+        </div>
+    </div>
+
+    <!-- CASE STUDY -->
+    <div class="section">
+        <h2>📍 ĐẦM DƠI — CÀ MAU (SAU MƯA 2 NGÀY)</h2>
+        <div class="timeline">
+            <div class="timeline-row"><div class="timeline-day">⏰ Ngày 1</div><div class="timeline-status">Sau mưa, quạt gom bọt nâu, tôm giảm ăn ~20%</div></div>
+            <div class="timeline-row"><div class="timeline-day">⏰ 9h sáng ngày 2</div><div class="timeline-status">Test NO₂ lên màu <span class="danger-highlight">ĐỎ RỰC</span> — mức báo động</div></div>
+            <div class="timeline-row"><div class="timeline-day">⏰ 10h ngày 2</div><div class="timeline-status">Đánh RHODO 2 lít/2000m³ (trời đang nắng)</div></div>
+            <div class="timeline-row"><div class="timeline-day">⏰ Ngày 4</div><div class="timeline-status">Test NO₂ hạ về <span class="highlight">hồng nhạt</span>, tôm ăn trở lại</div></div>
+        </div>
+        <div class="two-columns">
+            <div class="img-card"><img src="https://i.postimg.cc/fRFcS3RL/no2-truoc-tat.png" alt="NO2 trước"><div class="img-caption">📸 NO₂ đỏ rực — trước xử lý</div></div>
+            <div class="img-card"><img src="https://i.postimg.cc/htwLQJtS/no2-sau-tat.png" alt="NO2 sau"><div class="img-caption">📸 NO₂ hồng nhạt — sau xử lý</div></div>
+        </div>
+    </div>
+
+    <!-- ẢNH THÀNH CÔNG -->
+    <div class="section">
+        <h2>✅ SAU XỬ LÝ — NƯỚC SÁNG, TÔM KHỎE</h2>
+        <div class="two-columns">
+            <div class="img-card"><img src="https://i.postimg.cc/C5mDh52M/ao-tom-1.jpg" alt="Ao sạch"><div class="img-caption">📸 Sau xử lý — nước sáng</div></div>
+            <div class="img-card"><img src="https://i.postimg.cc/cCXYxCzQ/ao-tom-nuoc-dep.jpg" alt="Ao đẹp"><div class="img-caption">📸 Ao trở lại cân bằng</div></div>
+        </div>
+    </div>
+
+    <!-- FORM + UPLOAD -->
+    <div class="section" style="background: #07121f;">
+        <div class="danger-window-critical" style="margin-bottom: 1rem; font-size:0.85rem;">
+            🚨 CHỈ MẤT 2-4 NGÀY TỪ BỌT NÂU → GIẢM ĂN → HAO TÔM
+        </div>
+        <div style="display: flex; gap: 0.8rem; margin-bottom: 1rem;">
+            <button class="cta-button" id="microCta1" style="flex:1; background: #1e293b; box-shadow: none;">🔍 TỰ KIỂM TRA AO</button>
+            <button class="cta-button cta-zalo" id="microCta2" style="flex:1;">📞 CHÁT ZALO NGAY</button>
+        </div>
+        <div style="background: #0f1724; border-radius: 20px; padding: 1.5rem;">
+            <h3 style="text-align: center; font-size: 1.1rem; margin-bottom: 1rem;">📸 GỬI HÌNH HIỆN TRẠNG AO</h3>
+            <div class="fake-upload-box" id="fakeUploadTrigger">
+                <i class="fas fa-cloud-upload-alt"></i>
+                <span id="uploadStatusText">Nhấp để chọn ảnh nước ao, bọt quạt hoặc que test</span>
+            </div>
+            <input type="tel" id="phone" placeholder="📱 Nhập Số Zalo của anh/chị" class="input-field">
+            <button class="cta-button cta-zalo" id="submitLeadBtn">📲 GỬI HÌNH QUA ZALO → KỸ SƯ XEM NGAY</button>
+            <p style="font-size:0.7rem; text-align:center; margin-top:0.8rem;">✅ Phản hồi trong 15 phút — Hoàn toàn miễn phí</p>
+            <div id="formMsg" style="margin-top: 1rem;"></div>
+        </div>
+    </div>
+
+    <!-- CHAT WALL - TÊN ẨN SỐ + KHU VỰC -->
+    <div class="section">
+        <h2>💬 NGƯỜI NUÔI ĐÃ XỬ LÝ NÓI GÌ?</h2>
+        <div class="chat-wall" id="chatWall"></div>
+        <p style="text-align:center; font-size:0.65rem; color:#94a3b8;">👉 Hàng trăm ao đã xử lý thành công</p>
+    </div>
+
+    <!-- FAQ -->
+    <div class="section">
+        <h2>❓ HỎI ĐÁP NHANH</h2>
+        <div class="faq-item"><div class="faq-question">Đánh RHODO lúc nào tốt nhất? <i class="fas fa-chevron-down"></i></div><div class="faq-answer"><strong>9-12h trưa, trời nắng càng tốt.</strong> Vì là vi khuẩn quang dưỡng, cần ánh sáng mặt trời.</div></div>
+        <div class="faq-item"><div class="faq-question">Định kỳ bao lâu đánh một lần? <i class="fas fa-chevron-down"></i></div><div class="faq-answer">7-10 ngày/lần để duy trì môi trường nước ổn định.</div></div>
+        <div class="faq-item"><div class="faq-question">Bao lâu thấy tôm đỡ nổi đầu? <i class="fas fa-chevron-down"></i></div><div class="faq-answer">24-48h. Ao nặng có thể 3-4 ngày.</div></div>
+    </div>
+
+    <footer>
+        <p>🌱 Trạm xử lý sự cố ao tôm — Cà Mau, Bạc Liêu, Sóc Trăng, Năm Căn, Đầm Dơi, Vĩnh Châu</p>
+        <p>📢 Kỹ sư online 24/7 — Hỗ trợ theo ao thực tế</p>
+    </footer>
+</div>
+
+<button class="floating-zalo" id="floatingZalo"><span>Zalo</span>CA ĐÊM</button>
+<div class="fomo-toast" id="fomoToast"></div>
+<div class="delay-popup" id="delayPopup">
+    <i class="fas fa-comments" style="color:#10b981;"></i>
+    <span>💬 15 ao đang chờ xử lý trong ca này. Bạn có muốn gửi ảnh ao để kỹ sư xem?</span>
+    <button class="close-delay" id="closeDelayPopup">✕</button>
+</div>
+<div id="exitModal" class="modal"><div class="modal-card"><button id="closeExitModal" style="position: absolute; right: 15px; top: 10px; background: none; border: none; color: #94a3b8; font-size: 1.5rem; cursor: pointer;">&times;</button><h3>🌙 ĐỪNG ĐỂ TỚI SÁNG</h3><p>Nếu ao đang có bọt nâu, tôm ăn chậm hoặc nổi đầu lúc 2-3h sáng — gửi ảnh qua Zalo, kỹ sư trực đêm xem MIỄN PHÍ.</p><button class="cta-button cta-zalo" id="exitCta" style="margin-top: 1rem;">📲 GỬI HÌNH QUA ZALO NGAY</button></div></div>
+<div id="scrollModal" class="modal"><div class="modal-card"><button id="closeScrollModal" style="position: absolute; right: 15px; top: 10px; background: none; border: none; color: #94a3b8; font-size: 1.5rem; cursor: pointer;">&times;</button><h3>⚠️ ĐỪNG RỜI ĐI</h3><p>Nếu ao đang có bất kỳ dấu hiệu bất thường nào — đừng để tới mai. Gửi ảnh qua Zalo, kỹ sư sẽ xem và phản hồi ngay.</p><button class="cta-button cta-zalo" id="scrollCta">📲 GỬI ẢNH ZALO NGAY</button></div></div>
+
+<script>
+    const ZALO_PHONE = "0964353335";
+    function openZaloWithMessage(msg) {
+        let encodedMsg = encodeURIComponent(msg);
+        window.location.href = "https://zalo.me/" + ZALO_PHONE + "?text=" + encodedMsg;
+    }
+    function openZalo() { window.location.href = "https://zalo.me/" + ZALO_PHONE; }
+    
+    // Hiển thị popup thông báo tiếp nhận
+    function showNotify(message) {
+        const popup = document.getElementById('notifyPopup');
+        const textSpan = document.getElementById('notifyText');
+        textSpan.innerText = message;
+        popup.style.display = 'flex';
+        setTimeout(() => { popup.style.display = 'none'; }, 4000);
+    }
+    
+    // Danh sách avatars
+    const avatarList = [
+        "https://i.postimg.cc/PfV5j0fm/1.png", "https://i.postimg.cc/ZYs5SXYg/10.png", "https://i.postimg.cc/xjp12BjB/11.png",
+        "https://i.postimg.cc/pVcLH3Vw/12.png", "https://i.postimg.cc/J7YzLS4C/13.png", "https://i.postimg.cc/J4y44Ktd/14.png",
+        "https://i.postimg.cc/sDBDDK18/15.png", "https://i.postimg.cc/QxBxxSVw/16.png", "https://i.postimg.cc/dt7ttnDg/17.png",
+        "https://i.postimg.cc/FsfssG12/18.png", "https://i.postimg.cc/X7Z77xpS/19.png", "https://i.postimg.cc/v82ZsC8t/2.png",
+        "https://i.postimg.cc/vH1HHXcw/20.png", "https://i.postimg.cc/VLSLL4dc/21.png", "https://i.postimg.cc/c4K44TrS/22.png",
+        "https://i.postimg.cc/VLSLL4dw/23.png", "https://i.postimg.cc/4NKNNwmZ/24.png", "https://i.postimg.cc/65755zyt/25.png",
+        "https://i.postimg.cc/kXVXXwBn/26.png", "https://i.postimg.cc/VLSLL4ds/27.png", "https://i.postimg.cc/MZ3pSgZb/3.png",
+        "https://i.postimg.cc/PfV5j0fM/4.png", "https://i.postimg.cc/Y2DCHT23/5.png", "https://i.postimg.cc/dQNVYgQn/6.png",
+        "https://i.postimg.cc/WpY1vxpW/7.png", "https://i.postimg.cc/L4Q8pG4y/8.png", "https://i.postimg.cc/05Xysh5X/9.png"
+    ];
+    
+    // Avatar row
+    const avatarRow = document.getElementById('avatarRow');
+    for(let i = 0; i < 12; i++) {
+        const randomAvatar = avatarList[Math.floor(Math.random() * avatarList.length)];
+        const avatarDiv = document.createElement('div');
+        avatarDiv.className = 'avatar-item';
+        avatarDiv.innerHTML = `<img src="${randomAvatar}" alt="khách hàng">`;
+        avatarRow.appendChild(avatarDiv);
+    }
+    
+    // Chat wall với tên ẩn số + khu vực
+    const chatMessages = [
+        { name: "0949***584 — Cà Mau", text: "nay nước sáng hơn rồi a, quạt đỡ gom bọt" },
+        { name: "0918***237 — Bạc Liêu", text: "test xuống màu rồi a, tôm ăn lại mạnh" },
+        { name: "0976***412 — Sóc Trăng", text: "đáy bạt đỡ nhớt hẳn, cám ơn kỹ sư" },
+        { name: "0939***856 — Năm Căn", text: "đánh 2 cữ thấy quạt bớt gom bọt, tôm khỏe hơn" },
+        { name: "0903***789 — Đầm Dơi", text: "test NO₂ hạ rồi a, tôm đỡ nổi đầu" },
+        { name: "0945***123 — Vĩnh Châu", text: "hết nhớt bạt sau 3 ngày, tôm ăn mạnh" }
+    ];
+    
+    const chatWall = document.getElementById('chatWall');
+    chatMessages.forEach(msg => {
+        const randomAvatar = avatarList[Math.floor(Math.random() * avatarList.length)];
+        const chatDiv = document.createElement('div');
+        chatDiv.className = 'chat-message';
+        chatDiv.innerHTML = `
+            <div class="chat-avatar"><img src="${randomAvatar}" alt="avatar"></div>
+            <div class="chat-content">
+                <div class="chat-name">📱 ${msg.name}</div>
+                <div class="chat-text">${msg.text}</div>
+            </div>
+        `;
+        chatWall.appendChild(chatDiv);
+    });
+    
+    // Scarcity
+    let remainingSlots = 12;
+    const scarcitySpan = document.getElementById('scarcityCount');
+    function updateScarcity() { if(remainingSlots > 3) { remainingSlots--; scarcitySpan.innerText = remainingSlots; setTimeout(updateScarcity, 1800000); } }
+    setTimeout(updateScarcity, 1800000);
+    
+    // Live time
+    function updateLiveTime() {
+        const now = new Date(); const hour = now.getHours(); const mins = now.getMinutes().toString().padStart(2,'0');
+        document.getElementById('liveStatsText').innerHTML = `Cà Mau (${11+Math.floor(Math.random()*5)} ao) | Bạc Liêu (${8+Math.floor(Math.random()*4)} ao) | Sóc Trăng (${6+Math.floor(Math.random()*3)} ao)<br><span style="font-size:0.7rem;">⏰ Cập nhật ${hour}:${mins}</span>`;
+    }
+    updateLiveTime(); setInterval(updateLiveTime, 30000);
+    
+    // Self-diagnosis
+    const signs = ['sign1','sign2','sign3','sign4','sign5'];
+    function updateDiagnosis() {
+        let count = signs.filter(id => document.getElementById(id)?.checked).length;
+        document.getElementById('diagnosisCount').innerText = count;
+        const resultDiv = document.getElementById('diagnosisResult');
+        const checkContainer = document.getElementById('selfDiagnosis');
+        if(count >= 3) {
+            resultDiv.style.display = 'block';
+            checkContainer.classList.add('alert-danger-zone');
+            resultDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } else {
+            resultDiv.style.display = 'none';
+            checkContainer.classList.remove('alert-danger-zone');
+        }
+    }
+    signs.forEach(id => { const el = document.getElementById(id); if(el) el.addEventListener('change', updateDiagnosis); });
+    
+    // Self-segmentation - hiển thị popup khi chọn mức ao
+    const levelCards = document.querySelectorAll('.level-card');
+    levelCards.forEach(card => {
+        card.addEventListener('click', () => {
+            const level = card.dataset.level;
+            const dosage = card.dataset.dosage;
+            const msg = card.dataset.message;
+            const randomPhone = "098" + Math.floor(Math.random() * 9000) + "***" + Math.floor(Math.random() * 900);
+            showNotify(`📱 Đã tiếp nhận tình trạng ao từ ${randomPhone} — đang xử lý`);
+            openZaloWithMessage(`Chào kỹ sư, ao nhà tôi đang ở ${msg}. Liều khuyến nghị là ${dosage}. Xin hướng dẫn cụ thể.`);
+        });
+    });
+    
+    // Scroll
+    let scrollModalShown = false;
+    window.addEventListener('scroll', () => {
+        const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+        const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+        const percent = (winScroll / height) * 100;
+        document.getElementById('scrollBar').style.width = percent + '%';
+        if(percent > 75) document.getElementById('scrollUrgencyBar').classList.add('show');
+        else document.getElementById('scrollUrgencyBar').classList.remove('show');
+        if(percent > 65 && !scrollModalShown && !exitTriggered) {
+            scrollModalShown = true;
+            document.getElementById('scrollModal').style.display = 'flex';
+        }
+    });
+    
+    // Exit intent
+    let exitTriggered = false;
+    document.addEventListener('mouseleave', (e) => { if(e.clientY <= 0 && !exitTriggered) { exitTriggered = true; document.getElementById('exitModal').style.display = 'flex'; } });
+    document.getElementById('closeExitModal')?.addEventListener('click', () => document.getElementById('exitModal').style.display = 'none');
+    document.getElementById('exitCta')?.addEventListener('click', () => { document.getElementById('exitModal').style.display = 'none'; openZalo(); });
+    document.getElementById('closeScrollModal')?.addEventListener('click', () => document.getElementById('scrollModal').style.display = 'none');
+    document.getElementById('scrollCta')?.addEventListener('click', () => { document.getElementById('scrollModal').style.display = 'none'; openZalo(); });
+    
+    // CTAs
+    document.getElementById('microCta1')?.addEventListener('click', () => document.getElementById('selfDiagnosis').scrollIntoView({ behavior: 'smooth' }));
+    document.getElementById('microCta2')?.addEventListener('click', openZalo);
+    document.getElementById('heroCta')?.addEventListener('click', openZalo);
+    document.getElementById('floatingZalo')?.addEventListener('click', openZalo);
+    document.getElementById('urgencyCta')?.addEventListener('click', (e) => { e.preventDefault(); openZalo(); });
+    
+    // Fake upload + popup
+    document.getElementById('fakeUploadTrigger')?.addEventListener('click', () => {
+        const statusSpan = document.getElementById('uploadStatusText');
+        statusSpan.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang kết nối...';
+        setTimeout(() => {
+            statusSpan.innerHTML = '<i class="fas fa-check-circle"></i> ✅ Đã chọn ảnh. Nhập số Zalo bên dưới.';
+        }, 1000);
+    });
+    
+    // Lead form + popup
+    document.getElementById('submitLeadBtn')?.addEventListener('click', (e) => {
+        const phone = document.getElementById('phone').value.trim();
+        if(!phone) { document.getElementById('formMsg').innerHTML = '<div style="background:#b91c1c; padding:0.8rem; border-radius:30px;">⚠️ Nhập số Zalo</div>'; return; }
+        const maskedPhone = phone.slice(0, 4) + "***" + phone.slice(-3);
+        showNotify(`📱 Đã tiếp nhận tình trạng ao từ ${maskedPhone} — kỹ sư đang xử lý`);
+        document.getElementById('formMsg').innerHTML = '<div style="background:#10b981; padding:0.8rem; border-radius:30px;">✅ Đã nhận! Chuyển sang Zalo...</div>';
+        setTimeout(() => openZalo(), 1200);
+    });
+    
+    // FAQ
+    document.querySelectorAll('.faq-item').forEach(item => {
+        item.querySelector('.faq-question').addEventListener('click', () => {
+            const ans = item.querySelector('.faq-answer');
+            ans.style.display = ans.style.display === 'block' ? 'none' : 'block';
+        });
+    });
+    
+    // FOMO
+    const fomoMsgs = ["🔥 Cà Mau: 0949***584 gửi ảnh bọt nâu, đang xử lý", "🔥 Bạc Liêu: 0918***237 test NO₂ đỏ rực, kỹ sư đã phản hồi", "🔥 Sóc Trăng: 0976***412 ao sau mưa, đang theo dõi", "🔥 Năm Căn: 0939***856 ao nhớt bạt, đã nhận phác đồ", "🔥 Đầm Dơi: 0903***789 tôm nổi đầu, xử lý cấp tốc"];
+    let idx = 0;
+    function showFomo() { const toast = document.getElementById('fomoToast'); if(toast) { toast.innerHTML = `<i class="fas fa-bell" style="color:#10b981;"></i> ${fomoMsgs[idx % fomoMsgs.length]}`; toast.style.display = 'block'; setTimeout(() => toast.style.display = 'none', 5000); idx++; } }
+    setInterval(showFomo, 20000);
+    setTimeout(showFomo, 5000);
+    
+    // Delay popup
+    let delayShown = false;
+    setTimeout(() => { if(!delayShown && !exitTriggered) { delayShown = true; document.getElementById('delayPopup').style.display = 'flex'; } }, 15000);
+    document.getElementById('closeDelayPopup')?.addEventListener('click', () => document.getElementById('delayPopup').style.display = 'none');
+    
+    window.onclick = (event) => { if(event.target === document.getElementById('exitModal')) document.getElementById('exitModal').style.display = 'none'; if(event.target === document.getElementById('scrollModal')) document.getElementById('scrollModal').style.display = 'none'; };
+</script>
+</body>
+</html>
