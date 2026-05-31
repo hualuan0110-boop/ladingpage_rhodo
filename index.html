@@ -13,6 +13,24 @@
     
       gtag('config', 'G-4NEKRN18CX');
     </script>
+    <!-- Meta Pixel Code -->
+    <script>
+    !function(f,b,e,v,n,t,s)
+    {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+    n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];
+    s.parentNode.insertBefore(t,s)}(window, document,'script',
+    'https://connect.facebook.net/en_US/fbevents.js');
+    fbq('init', '2900647886938107');
+    fbq('track', 'PageView');
+    </script>
+    <noscript><img height="1" width="1" style="display:none"
+    src="https://www.facebook.com/tr?id=2900647886938107&ev=PageView&noscript=1"
+    /></noscript>
+    <!-- End Meta Pixel Code -->
+
     <!-- ========== OPEN GRAPH TAGS (CHO CHIA SẺ MẠNG XÃ HỘI) ========== -->
     <meta property="og:title" content="XỬ LÝ BỌT NÂU, NHỚT BẠT, KHÍ ĐỘC SAU MƯA. Kỹ sư online 24/7. Gửi ảnh ao tôm, nhận phác đồ xử lý MIỄN PHÍ trong 15 phút." />
     <meta property="og:description" content="XỬ LÝ BỌT NÂU, NHỚT BẠT, KHÍ ĐỘC SAU MƯA. Kỹ sư online 24/7. Gửi ảnh ao tôm, nhận phác đồ xử lý MIỄN PHÍ trong 15 phút." />
@@ -506,6 +524,7 @@
     
     // Self-diagnosis
     const signs = ['sign1','sign2','sign3','sign4','sign5'];
+    let diagnosisTracked = false; // Biến để chỉ gửi sự kiện 1 lần
     function updateDiagnosis() {
         let count = signs.filter(id => document.getElementById(id)?.checked).length;
         document.getElementById('diagnosisCount').innerText = count;
@@ -515,9 +534,24 @@
             resultDiv.style.display = 'block';
             checkContainer.classList.add('alert-danger-zone');
             resultDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            
+            // 🎯 THEO DÕI KHI NGƯỜI DÙNG ĐẠT NGƯỠNG CẢNH BÁO (3+ dấu hiệu)
+            if (!diagnosisTracked) {
+                diagnosisTracked = true;
+                fbq('track', 'CustomizeProduct', {
+                    content_name: 'Tu_chan_doan',
+                    content_category: 'Self_Diagnosis',
+                    value: count,
+                    currency: 'VND'
+                });
+            }
         } else {
             resultDiv.style.display = 'none';
             checkContainer.classList.remove('alert-danger-zone');
+            // Reset biến khi số dấu hiệu giảm xuống dưới 3
+            if (diagnosisTracked && count < 3) {
+                diagnosisTracked = false;
+            }
         }
     }
     signs.forEach(id => { const el = document.getElementById(id); if(el) el.addEventListener('change', updateDiagnosis); });
@@ -526,7 +560,15 @@
     const levelCards = document.querySelectorAll('.level-card');
     levelCards.forEach(card => {
         card.addEventListener('click', () => {
+            // 🎯 THEO DÕI NGƯỜI DÙNG CHỌN MỨC AO
             const level = card.dataset.level;
+            fbq('track', 'CustomizeProduct', {
+                content_name: 'Chon_muc_ao',
+                content_category: 'Self_Segmentation',
+                value: level,
+                currency: 'VND'
+            });
+            
             const dosage = card.dataset.dosage;
             const msg = card.dataset.message;
             const randomPhone = "098" + Math.floor(Math.random() * 9000) + "***" + Math.floor(Math.random() * 900);
@@ -537,13 +579,38 @@
     
     // Scroll
     let scrollModalShown = false;
+    let scrollTracked25 = false;
+    let scrollTracked50 = false;
+    let scrollTracked75 = false;
+    let scrollTracked100 = false;
+
     window.addEventListener('scroll', () => {
         const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
         const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
         const percent = (winScroll / height) * 100;
         document.getElementById('scrollBar').style.width = percent + '%';
-        if(percent > 75) document.getElementById('scrollUrgencyBar').classList.add('show');
-        else document.getElementById('scrollUrgencyBar').classList.remove('show');
+        
+        // 🎯 THEO DÕI CÁC MỐC CUỘN TRANG
+        if (percent >= 25 && !scrollTracked25) {
+            scrollTracked25 = true;
+            fbq('track', 'Scroll', { content_name: 'Cuon_trang_25%' });
+        }
+        if (percent >= 50 && !scrollTracked50) {
+            scrollTracked50 = true;
+            fbq('track', 'Scroll', { content_name: 'Cuon_trang_50%' });
+        }
+        if (percent >= 75 && !scrollTracked75) {
+            scrollTracked75 = true;
+            fbq('track', 'Scroll', { content_name: 'Cuon_trang_75%' });
+            document.getElementById('scrollUrgencyBar').classList.add('show');
+        } else if (percent < 75) {
+            document.getElementById('scrollUrgencyBar').classList.remove('show');
+        }
+        if (percent >= 98 && !scrollTracked100) {
+            scrollTracked100 = true;
+            fbq('track', 'Scroll', { content_name: 'Cuon_trang_100%' });
+        }
+        
         if(percent > 65 && !scrollModalShown && !exitTriggered) {
             scrollModalShown = true;
             document.getElementById('scrollModal').style.display = 'flex';
@@ -599,6 +666,19 @@
     setInterval(showFomo, 20000);
     setTimeout(showFomo, 5000);
     
+    // Hàm mở Zalo có tin nhắn
+    function openZaloWithMessage(msg) {
+        fbq('track', 'Lead', { content_name: 'Gửi ảnh ao qua Zalo (có tin nhắn)' });
+        let encodedMsg = encodeURIComponent(msg);
+        window.location.href = "https://zalo.me/0964353335?text=" + encodedMsg;
+    }
+
+    // Hàm mở Zalo không tin nhắn
+    function openZalo() { 
+        fbq('track', 'Lead', { content_name: 'Gửi ảnh ao qua Zalo' });
+        window.location.href = "https://zalo.me/0964353335"; 
+    }
+
     // Delay popup
     let delayShown = false;
     setTimeout(() => { if(!delayShown && !exitTriggered) { delayShown = true; document.getElementById('delayPopup').style.display = 'flex'; } }, 15000);
