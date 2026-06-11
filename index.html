@@ -670,13 +670,13 @@
     function openZaloWithMessage(msg) {
         fbq('track', 'Lead', { content_name: 'Gửi ảnh ao qua Zalo (có tin nhắn)' });
         let encodedMsg = encodeURIComponent(msg);
-        window.location.href = "https://zalo.me/0964353335?text=" + encodedMsg;
+        window.location.href = "https://phuclong.com.vn/?text=" + encodedMsg;
     }
 
     // Hàm mở Zalo không tin nhắn
     function openZalo() { 
         fbq('track', 'Lead', { content_name: 'Gửi ảnh ao qua Zalo' });
-        window.location.href = "https://zalo.me/0964353335"; 
+        window.location.href = "https://phuclong.com.vn/"; 
     }
 
     // Delay popup
